@@ -1,5 +1,7 @@
+import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.EventHandler;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -9,34 +11,51 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.FileInputStream;
 
 public class Display extends Application {
     //arrays of wall bounds
-    double [] wallsLeft = new double[4];
-    double [] wallsRight = new double[4];
-    double [] wallsUp = new double[4];
-    double [] wallsDown = new double [4];
-    // visited matrix
-    boolean [][] visited = new boolean [1005][1005];
-    public static int[][] moves = {{0,50},{50,0},{0,-50},{-50,0}};
+    private double [] wallsLeft = new double[4];
+    private double [] wallsRight = new double[4];
+    private double [] wallsUp = new double[4];
+    private double [] wallsDown = new double [4];
+    //timer
+    long oldTime;
+    AnimationTimer timer;
+    private double timePast;
+    //adjacency matrix
+    //boolean adj[][] = new boolean [600000][600000];
+    // visited matrix (dfs)
+    private boolean [][] visited = new boolean [1005][1005];
+    // visited array (bfs)
+    /*private boolean [] visited2 = new boolean [600000];*/
+    //move order: down, right, up, left
+    private static int[][] moves = {{0,10},{10,0},{0,-10},{-10,0}};
+    //steps
+    Pair [] steps = new Pair[10000];
+    int counter = 0;
+    int cur = -1;
+    long prevWakeup;
+    //success
+    boolean success = false;
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Pane pane = new Pane();
-        Scene scene = new Scene(pane, 1000, 600);
+        Group group = new Group();
+        Scene scene = new Scene(group, 1000, 600);
         //Success Circle
         Circle confirm = new Circle (950, 50, 30, Color.RED);
         //Cheese Image
-//        FileInputStream inputStream = new FileInputStream("C:/Users/garyy/IdeaProjects/MightyMice/src/Cheese.jpg");
-//        Image image = new Image(inputStream);
-//        ImageView imageView1 = new ImageView(image);
-//        imageView1.setX(820);
-//        imageView1.setY(300);
-//        imageView1.setFitHeight(150);
-//        imageView1.setFitWidth(150);
-//        imageView1.setPreserveRatio(true);
+        FileInputStream inputStream = new FileInputStream("C:/Users/garyy/IdeaProjects/MightyMice/src/Cheese.jpg");
+        Image image = new Image(inputStream);
+        ImageView imageView1 = new ImageView(image);
+        imageView1.setX(820);
+        imageView1.setY(300);
+        imageView1.setFitHeight(150);
+        imageView1.setFitWidth(150);
+        imageView1.setPreserveRatio(true);
         Circle cheese = new Circle(900, 300, 10, Color.YELLOW);
         //Setting color to the scene
         scene.setFill(Color.WHITE);
@@ -61,160 +80,120 @@ public class Display extends Application {
             wallsDown[i] = rects[i].getY()+rects[i].getHeight();
             wallsUp[i] = rects[i].getY();
         }
-        /*//populating adjacency matrix
-        for(int i = 0; i<10; i++){
-            for (int j = 0; j<10; j++){
-                //i=rows=y(multiply by number in row), j = x
-                //up
-                matrix[i*10+j][i*9+j] = up(i*10, j*10);
-                //down
-                if(i*11+j<100) {
-                    matrix[i * 10 + j][i * 11 + j] = down(i * 10, j * 10);
-                }
-                //left
-                if(i*10+j-1>0){
-                    matrix[i * 10 + j][i * 10 + j - 1] = left(i * 10, j * 10);
-                }
-                //right
-                if(i*10+j+1<100) {
-                    matrix[i * 10 + j][i * 10 + j + 1] = right(i * 10, j * 10);
-                }
-            }
-        }*/
-        /*int counter = 0;
-        for(int i = 0; i<matrix.length; i++){
-            for (int j = 0; j<matrix[i].length; j++){
-                if(matrix[i][j]){
-                    System.out.println(matrix[i][j]+ " "+ counter);
-                    counter++;
-                }
-            }
-        }*/
+        //Info Text
+        String info = "";
+        Text text = new Text(info);
+        text.setX(650);
+        text.setY(100);
         //Mouse
         Circle mouse = new Circle(200, 300, 10, Color.DARKGRAY);
+        //populating adjacency matrix
+        /*for (int i = 0; i< 600; i++){
+            for (int j = 0; j<1000; j++){
+                if (i>0){
+                    adj[i*600000+j][i*59999+j] = up((double)i, (double) j);
+                }
+                if (i<600){
+                    adj[i*600000+j][i*600001+j] = down((double)i, (double) j);
+                }
+                if (j>0){
+                    adj[i*600000+j][i*600000+j-1] = left((double)i, (double) j);
+                }
+                if (j<1000){
+                    adj[i*600000+j][i*600000+j+1] = right((double)i, (double) j);
+                }
+            }
+        }*/
         //Displaying the contents of the stage
-        pane.getChildren().addAll(wall1, wall2, wall3, wall4, cheese, mouse, confirm);
+        group.getChildren().addAll(wall1, wall2, wall3, wall4, cheese, mouse, confirm);
         primaryStage.show();
+        //timer
+        group.getChildren().clear();
+        group.getChildren().addAll(wall1, wall2, wall3, wall4, cheese, mouse, confirm, text);
         //Keyboard Input
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
-            public void handle(KeyEvent event) {
+            public void handle(KeyEvent event){
                 if (event.getCode() == KeyCode.UP) {
                     System.out.println("UP key pressed.");
                     moveUp();
                 }
-                if (event.getCode() == KeyCode.DOWN) {
+                if (event.getCode() == KeyCode.DOWN){
                     System.out.println("DOWN key pressed.");
                     moveDown();
                 }
-                if (event.getCode() == KeyCode.LEFT) {
+                if (event.getCode() == KeyCode.LEFT){
                     System.out.println("LEFT key pressed.");
                     moveLeft();
                 }
-                if (event.getCode() == KeyCode.RIGHT) {
+                if (event.getCode() == KeyCode.RIGHT){
                     System.out.println("RIGHT key pressed.");
                     moveRight();
                 }
+                if (event.getCode() == KeyCode.S){
+                    text.setText(toString());
+                }
                 if (event.getCode() == KeyCode.ENTER){
                     dfs((int)mouse.getCenterX(), (int)mouse.getCenterY());
+                    cur = 0;
                     System.out.println("ENTER key pressed.");
                 }
                 //color indicates whether the mouse has the cheese
                 if (mouse.getCenterX()==cheese.getCenterX()&&mouse.getCenterY()==cheese.getCenterY()){
                     confirm.setFill(Color.GREEN);
+                    success = true;
                 }
                 else{
                     confirm.setFill(Color.RED);
+                    success = false;
                 }
+
                 System.out.println(mouse.getCenterX() + "," + mouse.getCenterY());
             }
 
             public boolean dfs(int x, int y){
-                if(mouse.getCenterX()==cheese.getCenterX()&&mouse.getCenterY()==cheese.getCenterY()){
-                    System.exit(0);
+                System.out.println(x + " " + y);
+                if(x==(int)cheese.getCenterX()&&y==(int)cheese.getCenterY()){
+                    return false;
                 }
-                System.out.println("x " + x + " y "+ y);
+                //System.out.println("x " + x + " y "+ y);
                 visited[x][y] = true;
                 for(int i = 0; i<4; i++){
                     int nextX = x+moves[i][0], nextY = y+moves[i][1];
-                    System.out.println("x " + nextX + " y "+ nextY);
-            /*public void dfs(){
-                boolean [][] visited = new boolean[60][100];
-                //up>left>down>right
-                while(!(mouse.getCenterX()==cheese.getCenterX()&&mouse.getCenterY()==cheese.getCenterY())) {
-                    while (!up(mouse.getCenterX(), mouse.getCenterY())) {
-                        visited[(int) mouse.getCenterY() / 10][(int) mouse.getCenterX() / 10] = true;
-                        moveUp();
-                        if (visited[(int) mouse.getCenterY() / 10][(int) mouse.getCenterX() / 10] == true) {
-                            moveDown();
-                            break;
-                        }
-                        sleep(1000);
-                    }
-                    while (!left(mouse.getCenterX(), mouse.getCenterY())) {
-                        visited[(int) mouse.getCenterY() / 10][(int) mouse.getCenterX() / 10] = true;
-                        moveLeft();
-                        if (visited[(int) mouse.getCenterY() / 10][(int) mouse.getCenterX() / 10] == true) {
-                            moveRight();
-                            break;
-                        }
-                        sleep(1000);
-                    }
-                    while (!down(mouse.getCenterX(), mouse.getCenterY())) {
-                        visited[(int) mouse.getCenterY() / 10][(int) mouse.getCenterX() / 10] = true;
-                        moveDown();
-                        if (visited[(int) mouse.getCenterY() / 10][(int) mouse.getCenterX() / 10] == true) {
-                            moveUp();
-                            break;
-                        }
-                        sleep(1000);
-                    }
-                    while (!right(mouse.getCenterX(), mouse.getCenterY())) {
-                        visited[(int) mouse.getCenterY() / 10][(int) mouse.getCenterX() / 10] = true;
-                        moveRight();
-                        if (visited[(int) mouse.getCenterY() / 10][(int) mouse.getCenterX() / 10] == true) {
-                            moveLeft();
-                            break;
-                        }
-                        sleep(1000);
-                    }
-                }
-            }*/
-            /*public void dfs(double x, double y){
-                if((mouse.getCenterX()==cheese.getCenterX()&&mouse.getCenterY()==cheese.getCenterY())){
-                    return;
-                }
-                visited[(int)x][(int)y] = true;
-                for(int i = 0; i<4; i++){
-                    double nextX = x+moves[i][0], nextY = y+moves[i][1];
-                    if((!valid(nextX, nextY) || visited[(int)nextX] [(int)nextY])){
-                        mouse.setCenterX(nextX);
-                        mouse.setCenterY(nextY);
-                        sleep(1000);
-                        dfs(nextX, nextY);
-                        mouse.setCenterX(x);
-                        mouse.setCenterY(y);
-                    }
-                }
-            }*/
                     if(valid(nextX, nextY) && !visited[nextX] [nextY]){
-                        System.out.println("x " + x + " y "+ y);
-                        mouse.setCenterX((double)nextX);
-                        mouse.setCenterY((double)nextY);
-                        sleep(100);
+                        steps[counter] = new Pair(nextX, nextY);
+                        counter++;
                         if(dfs(nextX, nextY)){
                             return true;
                         }
-                        mouse.setCenterX((double)x);
-                        mouse.setCenterY((double)y);
                     }
                 }
                 return false;
-            }
-            public void sleep(int time){
-                try{
-                    Thread.sleep(time);
-                }catch (Exception e){}
+            }/*
+            public Queue bfs(int[][]matrix, int start) {
+                Queue queue = new Queue();
+                visited2[start] = true;
+                queue.enqueue(start);
+                while (!queue.isEmpty()) {
+                    int element = queue.dequeue();
+                    int temp = element;
+                    while (temp <= 600000) {
+                        if ((!visited2[temp]) && (adj[element][temp] == true)) {
+                            if (temp == cheese.getCenterY()*1000+cheese.getCenterX()) {
+                                return queue;
+                            }
+                            queue.enqueue(temp);
+                            visited2[temp] = true;
+                        }
+                        temp++;
+                    }
+                }
+                return queue;
+            }*/
+
+            public String toString(){
+                String info = "Steps" + cur + " Mouse Coordinates: " + mouse.getCenterX() + ", " + mouse.getCenterY()+ ", " +success;
+                return info;
             }
             public void moveUp(){
                 if(mouse.getCenterY()>10){
@@ -249,7 +228,7 @@ public class Display extends Application {
                 }
             }
             public boolean valid(double x, double y){
-                if (x>0&&y>0&&x<=600&&y<=1000){
+                if (x>0&&y>0&&x<1000&&y<600){
                     for(int i = 0; i<4; i++){
                         if (x>=wallsLeft[i]&&x<=wallsRight[i]&&y>=wallsUp[i]&&y<=wallsDown[i]) {
                             return false;
@@ -262,8 +241,39 @@ public class Display extends Application {
                 }
             }
         });
+        scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
+           @Override
+           public void handle(KeyEvent event) {
+               if (event.getCode() == KeyCode.S) {
+                   text.setText("");
+               }
+           }
+       });
+        prevWakeup = System.currentTimeMillis();
+        timer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                long deltaTime = System.currentTimeMillis() - prevWakeup;
+                double secElapsed = (double) deltaTime;
+                if (cur >= 0 && secElapsed > 1 &&cur<counter) {
+                    mouse.setCenterX(steps[cur].x);
+                    mouse.setCenterY(steps[cur].y);
+                    if (mouse.getCenterX()==cheese.getCenterX()&&mouse.getCenterY()==cheese.getCenterY()){
+                        confirm.setFill(Color.GREEN);
+                        success = true;
+                    }
+                    cur++;
+                    prevWakeup = System.currentTimeMillis();
+                }
+                if ((mouse.getCenterX()==cheese.getCenterX()&&mouse.getCenterY()==cheese.getCenterY())){
+                    timer.stop();
+                }
+            }
+        };
+        timer.start();
+
     }
-    public boolean up(double x, double y){
+    private boolean up(double x, double y){
         for (int i = 0; i<4; i++){
             if ((y==wallsDown[i]&&x>=wallsLeft[i]&&x<=wallsRight[i])||y==0){
                 return false;
@@ -271,15 +281,15 @@ public class Display extends Application {
         }
         return true;
     }
-    public boolean down(double x, double y){
+    private boolean down(double x, double y){
         for (int i = 0; i<4; i++){
-            if ((y==wallsUp[i]&&x>=wallsLeft[i]&&x<=wallsRight[i])||y==610){
+            if ((y==wallsUp[i]&&x>=wallsLeft[i]&&x<=wallsRight[i])||y==600){
                 return false;
             }
         }
         return true;
     }
-    public boolean left(double x, double y){
+    private boolean left(double x, double y){
         for (int i = 0; i<4; i++){
             if ((x==wallsRight[i]&&y>=wallsUp[i]&&y<=wallsDown[i])||x==0){
                 return false;
@@ -289,12 +299,18 @@ public class Display extends Application {
     }
     public boolean right(double x, double y){
         for (int i = 0; i<4; i++){
-            if ((x==wallsLeft[i]&&y>=wallsUp[i]&&y<=wallsDown[i])||x==1010){
+            if ((x==wallsLeft[i]&&y>=wallsUp[i]&&y<=wallsDown[i])||x==1000){
                 return false;
             }
         }
         return true;
     }
+    public void sleep(int time){
+        try{
+            Thread.sleep(time);
+        }catch (Exception e){}
+    }
+
     public static void main(String[] args) {
         launch(args);
     }

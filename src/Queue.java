@@ -1,4 +1,4 @@
-public class Queue {
+public class Queue implements ADT{
     public int l,r;
     public int[] arr;
 
