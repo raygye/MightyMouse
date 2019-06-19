@@ -1,3 +1,6 @@
+//Gary Ye ICS4U1 Summative
+//Mr. Radulovic
+//2019-06-18
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.EventHandler;
@@ -190,11 +193,12 @@ public class Display extends Application {
                 }
                 return queue;
             }*/
-
+            //displays steps, coordinates, and success confirmation
             public String toString(){
                 String info = "Steps" + cur + " Mouse Coordinates: " + mouse.getCenterX() + ", " + mouse.getCenterY()+ ", " +success;
                 return info;
             }
+            //if invalid move by user, movement will be corrected
             public void moveUp(){
                 if(mouse.getCenterY()>10){
                     mouse.setCenterY(mouse.getCenterY() - 10);
@@ -227,6 +231,7 @@ public class Display extends Application {
                     }
                 }
             }
+            //valid move checking function for dfs
             public boolean valid(double x, double y){
                 if (x>0&&y>0&&x<1000&&y<600){
                     for(int i = 0; i<4; i++){
@@ -241,6 +246,7 @@ public class Display extends Application {
                 }
             }
         });
+        //text disappears once S key is released
         scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
            @Override
            public void handle(KeyEvent event) {
@@ -249,6 +255,7 @@ public class Display extends Application {
                }
            }
        });
+        //dfs loop/timer
         prevWakeup = System.currentTimeMillis();
         timer = new AnimationTimer() {
             @Override
@@ -258,6 +265,7 @@ public class Display extends Application {
                 if (cur >= 0 && secElapsed > 1 &&cur<counter) {
                     mouse.setCenterX(steps[cur].x);
                     mouse.setCenterY(steps[cur].y);
+                    //success circle update
                     if (mouse.getCenterX()==cheese.getCenterX()&&mouse.getCenterY()==cheese.getCenterY()){
                         confirm.setFill(Color.GREEN);
                         success = true;
@@ -265,6 +273,7 @@ public class Display extends Application {
                     cur++;
                     prevWakeup = System.currentTimeMillis();
                 }
+                //stops once mouse reaches cheese
                 if ((mouse.getCenterX()==cheese.getCenterX()&&mouse.getCenterY()==cheese.getCenterY())){
                     timer.stop();
                 }
@@ -273,6 +282,7 @@ public class Display extends Application {
         timer.start();
 
     }
+    //for bfs, checks is up/down/left/right is a valid move
     private boolean up(double x, double y){
         for (int i = 0; i<4; i++){
             if ((y==wallsDown[i]&&x>=wallsLeft[i]&&x<=wallsRight[i])||y==0){
@@ -305,6 +315,7 @@ public class Display extends Application {
         }
         return true;
     }
+    //unused sleep function
     public void sleep(int time){
         try{
             Thread.sleep(time);
