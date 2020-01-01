@@ -146,27 +146,7 @@ public class Display extends Application {
                     }
                 }
                 return false;
-            }/*
-            public Queue bfs(int[][]matrix, int start) {
-                Queue queue = new Queue();
-                visited2[start] = true;
-                queue.enqueue(start);
-                while (!queue.isEmpty()) {
-                    int element = queue.dequeue();
-                    int temp = element;
-                    while (temp <= 600000) {
-                        if ((!visited2[temp]) && (adj[element][temp] == true)) {
-                            if (temp == cheese.getCenterY()*1000+cheese.getCenterX()) {
-                                return queue;
-                            }
-                            queue.enqueue(temp);
-                            visited2[temp] = true;
-                        }
-                        temp++;
-                    }
-                }
-                return queue;
-            }*/
+            }
             //displays steps, coordinates, and success confirmation
             public String toString(){
                 String info = "Steps" + cur + " Mouse Coordinates: " + mouse.getCenterX() + ", " + mouse.getCenterY()+ ", " +success;
@@ -256,7 +236,7 @@ public class Display extends Application {
         timer.start();
 
     }
-    //for bfs, checks is up/down/left/right is a valid move
+    //checks is up/down/left/right is a valid move
     private boolean up(double x, double y){
         for (int i = 0; i<4; i++){
             if ((y==wallsDown[i]&&x>=wallsLeft[i]&&x<=wallsRight[i])||y==0){
@@ -289,13 +269,6 @@ public class Display extends Application {
         }
         return true;
     }
-    //unused sleep function
-    public void sleep(int time){
-        try{
-            Thread.sleep(time);
-        }catch (Exception e){}
-    }
-
     public static void main(String[] args) {
         launch(args);
     }
