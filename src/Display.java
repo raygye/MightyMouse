@@ -50,15 +50,6 @@ public class Display extends Application {
         Scene scene = new Scene(group, 1000, 600);
         //Success Circle
         Circle confirm = new Circle (950, 50, 30, Color.RED);
-        //Cheese Image
-        FileInputStream inputStream = new FileInputStream("C:/Users/garyy/IdeaProjects/MightyMice/src/Cheese.jpg");
-        Image image = new Image(inputStream);
-        ImageView imageView1 = new ImageView(image);
-        imageView1.setX(820);
-        imageView1.setY(300);
-        imageView1.setFitHeight(150);
-        imageView1.setFitWidth(150);
-        imageView1.setPreserveRatio(true);
         Circle cheese = new Circle(900, 300, 10, Color.YELLOW);
         //Setting color to the scene
         scene.setFill(Color.WHITE);
@@ -90,23 +81,6 @@ public class Display extends Application {
         text.setY(100);
         //Mouse
         Circle mouse = new Circle(200, 300, 10, Color.DARKGRAY);
-        //populating adjacency matrix
-        /*for (int i = 0; i< 600; i++){
-            for (int j = 0; j<1000; j++){
-                if (i>0){
-                    adj[i*600000+j][i*59999+j] = up((double)i, (double) j);
-                }
-                if (i<600){
-                    adj[i*600000+j][i*600001+j] = down((double)i, (double) j);
-                }
-                if (j>0){
-                    adj[i*600000+j][i*600000+j-1] = left((double)i, (double) j);
-                }
-                if (j<1000){
-                    adj[i*600000+j][i*600000+j+1] = right((double)i, (double) j);
-                }
-            }
-        }*/
         //Displaying the contents of the stage
         group.getChildren().addAll(wall1, wall2, wall3, wall4, cheese, mouse, confirm);
         primaryStage.show();

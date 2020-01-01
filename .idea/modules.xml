@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/MightyMice.iml" filepath="$PROJECT_DIR$/MightyMice.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MightyMouse.iml" filepath="$PROJECT_DIR$/MightyMouse.iml" />
     </modules>
   </component>
 </project>
