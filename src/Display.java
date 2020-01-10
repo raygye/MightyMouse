@@ -21,10 +21,16 @@ import java.io.FileInputStream;
 
 public class Display extends Application {
     //arrays of wall bounds
-    private double [] wallsLeft = new double[4];
-    private double [] wallsRight = new double[4];
-    private double [] wallsUp = new double[4];
-    private double [] wallsDown = new double [4];
+    private final double [] wallsLeft = new double[4];
+    private final double [] wallsRight = new double[4];
+    private final double [] wallsUp = new double[4];
+    private final double [] wallsDown = new double [4];
+    //Maze Walls
+    Rectangle rects [] = new Rectangle[4];
+    Rectangle wall1 = new Rectangle(300, 0, 50, 400);
+    Rectangle wall2 = new Rectangle(450, 250, 50, 350);
+    Rectangle wall3 = new Rectangle(600, 0, 50, 300);
+    Rectangle wall4 = new Rectangle(750, 200, 50, 400);
     //timer
     long oldTime;
     AnimationTimer timer;
@@ -46,6 +52,10 @@ public class Display extends Application {
     boolean success = false;
     @Override
     public void start(Stage primaryStage) throws Exception {
+        rects[0] = wall1;
+        rects[1] = wall2;
+        rects[2] = wall3;
+        rects[3] = wall4;
         Group group = new Group();
         Scene scene = new Scene(group, 1000, 600);
         //Success Circle
@@ -57,16 +67,6 @@ public class Display extends Application {
         primaryStage.setTitle("Mighty Mice");
         //Adding the scene to Stage
         primaryStage.setScene(scene);
-        //Maze Walls
-        Rectangle rects [] = new Rectangle[4];
-        Rectangle wall1 = new Rectangle(300, 0, 50, 400);
-        Rectangle wall2 = new Rectangle(450, 250, 50, 350);
-        Rectangle wall3 = new Rectangle(600, 0, 50, 300);
-        Rectangle wall4 = new Rectangle(750, 200, 50, 400);
-        rects[0] = wall1;
-        rects[1] = wall2;
-        rects[2] = wall3;
-        rects[3] = wall4;
         //Wall Bounds
         for (int i = 0; i<4; i++){
             wallsLeft[i] = rects[i].getX();
