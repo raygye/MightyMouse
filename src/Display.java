@@ -1,23 +1,16 @@
-//Gary Ye ICS4U1 Summative
-//Mr. Radulovic
-//2019-06-18
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.io.FileInputStream;
 
 public class Display extends Application {
     //arrays of wall bounds
@@ -34,13 +27,8 @@ public class Display extends Application {
     //timer
     long oldTime;
     AnimationTimer timer;
-    private double timePast;
-    //adjacency matrix
-    //boolean adj[][] = new boolean [600000][600000];
     // visited matrix (dfs)
     private boolean [][] visited = new boolean [1005][1005];
-    // visited array (bfs)
-    /*private boolean [] visited2 = new boolean [600000];*/
     //move order: down, right, up, left
     private static int[][] moves = {{0,10},{10,0},{0,-10},{-10,0}};
     //steps
@@ -133,7 +121,6 @@ public class Display extends Application {
                 if(x==(int)cheese.getCenterX()&&y==(int)cheese.getCenterY()){
                     return false;
                 }
-                //System.out.println("x " + x + " y "+ y);
                 visited[x][y] = true;
                 for(int i = 0; i<4; i++){
                     int nextX = x+moves[i][0], nextY = y+moves[i][1];
